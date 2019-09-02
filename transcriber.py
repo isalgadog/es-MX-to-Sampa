@@ -167,7 +167,6 @@ def transcriber(text):
             i_t += 1
             i_o += 1
             
-    print(sys.argv)
     print(output)
     return output
     
