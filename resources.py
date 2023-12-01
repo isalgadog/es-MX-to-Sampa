@@ -1,24 +1,3 @@
-
-# Ortographic sets
-# All letter are converted to lowercase before transcription to SAMPA.
-vowels = [
-    "a",
-    "e", 
-    "i", 
-    "o", 
-    "u"
-]
-
-vowels_stressed = [
-    "á",
-    "é",
-    "í",
-    "ó",
-    "ú"
-]
-
-consonants = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'ñ', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z', 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z']
-
 # Unvariable transcription
 map_unvar = {
     "a": "a",
@@ -31,12 +10,9 @@ map_unvar = {
     "ñ": "J",
     "p": "p",
     "t": "t",
-    "v": "b",
-    "w": "w",
+    "w": "gw",
     "z": "s"
 }
 
-#Consonants that trigger r -> rr
-
-cons_r = ["l", "n", "r","s"]
-cons_B = ["l", "r", "s"]
+plosives = ["p", "t", "k", "b", "d", "g", "B", "D", "G", "tS", "r", "J", "x", "f"]
+vowels = ["a", "e", "i", "o", "u", "w", "j"]

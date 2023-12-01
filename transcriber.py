@@ -1,190 +1,199 @@
+import resources
+
+plosives = resources.plosives
+vowels = resources.vowels
+map_unvar = resources.map_unvar
+
 def transcriber(text):
-
-#Resources
-    import resources as res
-
-#Indexes and variables
-    text = list(text)
+    print(text)
+    text = list(text.lower())
     output = []
-    i_t = 0
-    i_o = 0
-
-#Whitespace to add a final index (workaround)
-    text.append("")
-
-
-#Function starts
-    while i_t < len(text):
-
-#Rules for unvariable consonants:
-        if text[i_t] in res.map_unvar:
-            output.append(res.map_unvar[text[i_t]])
-            i_t += 1
-            i_o += 1
-
-#---------------------------------------------------------------
-#Rules for "c"
-        elif text[i_t] == "c":
-
-#Rule for "ch"
-                if text[(i_t)+1] == "h":
-                    output.append("tS")
-                    i_t += 2
-                    i_o += 1
-
-#Rule for ce, ci
-                elif text[(i_t)+1] == "e" or text[(i_t)+1] == "i":
-                    output.append("s")
-                    i_t += 1
-                    i_o += 1
-        
-#Rule for "c" = /k/
-                elif text[(i_t)] == "c":
-                    output.append("k")
-                    i_t += 1
-                    i_o += 1
-
-
-#---------------------------------------------------------------
-#Rules for "q"
-
-        elif text[i_t] == "q":
-            
-#Rule for "qu"
-            if text[(i_t)+1] == "u":
-                output.append("k")
-                i_t += 2
-                i_o += 1
-
-#Rule for other "q"'s
-            else:
-                output.append("k")
-                i_t += 1
-                i_o += 1
-
-#Rule for "sh"
-        elif text[i_t] == "s":
-            if text[(i_t)+1] == "h":
-                output.append("S")
-                i_t += 2
-                i_o += 1
-
-#Rule for other "s"
-            else:
-                output.append("s")
-                i_t += 1
-                i_o += 1
-      
-#Rules for initial r = "r"
-        elif text[i_t] == "r" and i_t == 0:
-            output.append("r")
-            i_t += 1
-            i_o += 1
-
-        elif text[i_t] == "r" and text[(i_t)-1] == " ":
-            output.append("r")
-            i_t += 1
-            i_o += 1
-
-        elif text[i_t] == "r" and text[(i_t)-1] in res.cons_r:
-            output.append("r")
-            i_t += 1
-            i_o += 1
-
-#Rule for "r = 4"
-        elif text[i_t] == "r":
-            if text[(i_t)+1] != "r":
-                output.append("4")
-                i_t += 1
-                i_o += 1
-
-#Rule for "rr = r"            
-            elif text[(i_t)+1] == "r":
-                output.append("r")
-                i_t += 2
-                i_o += 1
-
-#Rules for "l"
-#Rule for "ll"
-        elif text[i_t] == "l":
-            if text[(i_t)+1] == "l":
-                output.append("j")
-                i_t += 2
-                i_o += 1
-
-#Rule for "l"
-            else:
-                output.append("l")
-                i_t += 1
-                i_o += 1
-
-#Rule for "h"
-        elif text[i_t] == "h":
-                i_t += 1
-                i_o += 1
-
-
-#Rules for allophony of "b"
-#Rule for absolute onset
-        elif text[i_t] == "b" and i_t == 0:
-            output.append("b")
-            i_t += 1
-            i_o += 1
-
-#Rules for intervocalic "b"
-#Word-boundary intervocalic
-        elif text[i_t] == "b" and (text[(i_t)-1] == " " and text[(i_t)-2] in res.vowels):
-            output.append("B")
-            i_t += 1
-            i_o += 1
-
-#Same-word intervocalic
-        elif text[i_t] == "b":
-            if text[(i_t)+1] in res.vowels and text[(i_t)-1] in res.vowels:
-                output.append("B")
-                i_t += 1
-                i_o += 1
-        
-#After consonants (not "m")
-        elif text[i_t] == "b":
-            if text[(i_t)-1] in res.cons_B:
-                output.append("B")
-                i_t += 1
-                i_o += 1    
-
-#After "m"
-        elif text[i_t] == "b":
-            if text[(i_t)-1] == "m":
-                output.append("b")
-                i_t += 1
-                i_o += 1    
-
-#FALLBACK
-
-
-        else:
-            output.append(text[i_t])
-            i_t += 1
-            i_o += 1
-            
-    print(output)
-    return output
+    #PHONEMIC TRANSCRIPTION
     
+    grave_endings = ["n", "s", "a", "e", "i", "o", "u"]
+    word_ending = text[-1]
+            
+    for i, letter in enumerate(text):
+        global phonemes
+        # Check if it's the last letter
+        next_letter = text[i + 1] if i < len(text) - 1 else None
+        previous_letter = text[i - 1] if i > 0 else None        
+
+        # Define phonemic rules using a dictionary
+        phonemic_rules = {
+            "c": {"h": "tS", 
+                  "e": "s", 
+                  "i": "s", 
+                  "default": "k"},
+            "q": {"u": "k", 
+                  "default": "k"},
+            "s": {"h": "S", 
+                  "default": "s"},
+            "r": {"default": "r" if i == 0 or next_letter == "r" or previous_letter in ["n", "l", "s"] else "4"},
+            "l": {"l": "j", 
+                  "default": "l" if previous_letter != "l" else " "},
+            "g": {"a": "g" if i == 0 else "G", 
+                  "o":"g" if i == 0 else "G", 
+                  "u":"g" if i == 0 else "G", 
+                  "e": "x", 
+                  "i": "x", 
+                  "default":"G" if previous_letter in ["a", "e", "i", "o", "u"] and next_letter in ["a", "e", "o"] else "g"},
+            "u": {"a" : "w", 
+                  "e": "w",
+                  "default": "w" if previous_letter in ["a", "e", "o"] else "u"
+                  },
+            "i": {"a":"j", 
+                  "e":"j", 
+                  "o":"j",
+                  "á":"j", 
+                  "é":"j", 
+                  "ó":"j",
+                  "default": "j" if previous_letter in ["a", "e", "o"] else "i"},
+            "n": {"default":"m" if next_letter in ["b", "p", "f", "v"] else "n"},
+            "b": {"default": "B" if next_letter in ["a", "e", "i", "o", "u"] and previous_letter in ["a", "e", "i", "o", "u"] else "b"},
+            "v": {"default": "B" if next_letter in ["a", "e", "i", "o", "u"] and previous_letter in ["a", "e", "i", "o", "u"] else "b"},
+            "d": {"default": "D" if next_letter in ["a", "e", "i", "o", "u"] and previous_letter in ["a", "e", "i", "o", "u"] else "d"},
+            "á": {"default": "'a"},
+            "é": {"default": "'e"},
+            "í": {"default": "'i"},
+            "ó": {"default": "'o"},
+            "ú": {"default": "'u"}
+        }
+
+        #Apply phonemic rules
+        if letter in map_unvar:
+            output.append(map_unvar[letter])
+        elif letter == "r" and previous_letter == "r":
+            continue  # Skip adding "4" after "r"
+        elif letter == "u" and previous_letter in ["g", "q"] and next_letter in ["e", "i"]:
+            continue
+        elif letter == "h":
+            continue
+        elif letter in phonemic_rules:
+            output.append(phonemic_rules[letter].get(next_letter, phonemic_rules[letter]["default"]))
+        else:
+            output.append(letter)
+        
+    phonemes = [char for char in output if char != " "]  # Remove spaces
+
+    #SYLLABLE SEPARATION
+    modified_phonemes = []
+    for i, phoneme in enumerate(phonemes):
+        # Check if it's the last phoneme
+        next_phoneme = phonemes[i + 1] if i < len(phonemes) - 1 else None
+        previous_phoneme = phonemes[i - 1] if i > 0 else None
+
+        if i == len(phonemes):
+            modified_phonemes.append(phoneme)
+        elif i > 0 and phoneme in plosives and i < len(phonemes)-1:
+            modified_phonemes.append(".")
+        elif i > 0 and phoneme in ["4", "s", "n", "m", "l", "j", "w"] and (previous_phoneme in vowels or previous_phoneme in ["'i", "'u", "'e", "'a", "'o"]) and (next_phoneme in vowels or next_phoneme in ["'i", "'u", "'e", "'a", "'o"]):
+            modified_phonemes.append(".")
+        elif i > 0 and phoneme in ["a", "e", "o"] and previous_phoneme in ["a", "e", "o", "'i", "'u"]:
+            modified_phonemes.append(".")
+        elif i > 0 and phoneme in ["'i", "'u"] and previous_phoneme in ["a", "e", "o"]:
+            modified_phonemes.append(".")
+        modified_phonemes.append(phoneme)
+
+    joint_phonemes = "".join(modified_phonemes)
 
 
+    vowel_list = [char for char in phonemes if char in ["a", "e", "i", "o", "u", "'a", "'e", "'i", "'o", "'u"]]  # List comprehension to extract vowels
 
-#Rules for b/B
+    if any(x in text for x in "áéíóú"):
+        stress = "grave"
+        if vowel_list[-1] in ["'a", "'e", "'i", "'o", "'u"]:
+            stress = "acute"
+        elif len(vowel_list) > 1 and vowel_list[-2] in ["'a", "'e", "'i", "'o", "'u"]:
+            stress = "grave"
 
-#Rules for g/G
+        elif len(vowel_list) > 2 and vowel_list[-3] in ["'a", "'e", "'i", "'o", "'u"]:
+            stress = "paroxytone"
+    else:
+        if word_ending in grave_endings:
+            stress = "grave"
+        else:
+            stress = "acute"
 
-#Rules for gu
 
-#Rules for d/D
+    
+    syllable_list = [[]]
+    i = 0
+    for phoneme in joint_phonemes:
+        if phoneme == "'":
+            continue
+        elif phoneme != ".":
+            syllable_list[i].append(phoneme)
+        else:
+            syllable_list.append([])
+            i +=1 
 
-#Rules for i/j
+    if stress == "acute":
+        syllable_list[-1].insert(0,"'") 
+    elif stress == "grave":
+        syllable_list[-2].insert(0,"'")
+    else:
+        syllable_list[-3].insert(0,"'")
 
-#Rules for u/w
 
-#Rules for graphic stress
+    final_transcription = []
+    for syllable in syllable_list:
+        flat_syllable = "".join(syllable)
+        final_transcription.append(flat_syllable)
+        final_transcription.append(".")
+    
+    final_transcription = "".join(final_transcription)
+    final_transcription = final_transcription[:-1]
+    print(final_transcription)
 
-#Rules for implicit stress
+    return phonemes
+
+# Test cases
+transcriber("hola")
+transcriber("chola")
+transcriber("hache")
+transcriber("cazo")
+transcriber("cola")
+transcriber("cultura")
+transcriber("quesos")
+transcriber("quilate")
+transcriber("llavero")
+transcriber("allanar")
+transcriber("rosa")
+transcriber("rosario")
+transcriber("ferrocarrilero")
+transcriber("israel")
+transcriber("enrique")
+transcriber("alrato")
+transcriber("auto")
+transcriber("europa")
+transcriber("cuarto")
+transcriber("enviar")
+transcriber("biombo")
+transcriber("viejo")
+transcriber("caigo")
+transcriber("reino")
+transcriber("Bebesaurio")
+transcriber("dedicación")
+transcriber("gato")
+transcriber("aguileño")
+transcriber("agachar")
+transcriber("gelatina")
+transcriber("gitano")
+transcriber("gorda")
+transcriber("gurú")
+transcriber("Guerrero")
+transcriber("guiño")
+transcriber("Útica")
+transcriber("broca")
+transcriber("hablar")
+transcriber("aurora")
+transcriber("ángel")
+transcriber("habladurías")
+transcriber("baúl")
+transcriber("sofreír")
+transcriber("cuauhtémoc")
+transcriber("cuitláhuac")
+transcriber("salud")
+transcriber("búho")
+transcriber("código")
