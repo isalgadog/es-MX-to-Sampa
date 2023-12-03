@@ -5,7 +5,6 @@ vowels = resources.vowels
 map_unvar = resources.map_unvar
 
 def transcriber(text):
-    print(text)
     text = list(text.lower())
     output = []
     #PHONEMIC TRANSCRIPTION
@@ -87,6 +86,8 @@ def transcriber(text):
             modified_phonemes.append(phoneme)
         elif i > 0 and phoneme in plosives and i < len(phonemes)-1:
             modified_phonemes.append(".")
+        elif i > 0 and phoneme in ["s", "n", "m"] and previous_phoneme in ["s", "n", "m", "l"]:
+            modified_phonemes.append(".")
         elif i > 0 and phoneme in ["4", "s", "n", "m", "l", "j", "w"] and (previous_phoneme in vowels or previous_phoneme in ["'i", "'u", "'e", "'a", "'o"]) and (next_phoneme in vowels or next_phoneme in ["'i", "'u", "'e", "'a", "'o"]):
             modified_phonemes.append(".")
         elif i > 0 and phoneme in ["a", "e", "o"] and previous_phoneme in ["a", "e", "o", "'i", "'u"]:
@@ -144,56 +145,4 @@ def transcriber(text):
     
     final_transcription = "".join(final_transcription)
     final_transcription = final_transcription[:-1]
-    print(final_transcription)
-
-    return phonemes
-
-# Test cases
-transcriber("hola")
-transcriber("chola")
-transcriber("hache")
-transcriber("cazo")
-transcriber("cola")
-transcriber("cultura")
-transcriber("quesos")
-transcriber("quilate")
-transcriber("llavero")
-transcriber("allanar")
-transcriber("rosa")
-transcriber("rosario")
-transcriber("ferrocarrilero")
-transcriber("israel")
-transcriber("enrique")
-transcriber("alrato")
-transcriber("auto")
-transcriber("europa")
-transcriber("cuarto")
-transcriber("enviar")
-transcriber("biombo")
-transcriber("viejo")
-transcriber("caigo")
-transcriber("reino")
-transcriber("Bebesaurio")
-transcriber("dedicación")
-transcriber("gato")
-transcriber("aguileño")
-transcriber("agachar")
-transcriber("gelatina")
-transcriber("gitano")
-transcriber("gorda")
-transcriber("gurú")
-transcriber("Guerrero")
-transcriber("guiño")
-transcriber("Útica")
-transcriber("broca")
-transcriber("hablar")
-transcriber("aurora")
-transcriber("ángel")
-transcriber("habladurías")
-transcriber("baúl")
-transcriber("sofreír")
-transcriber("cuauhtémoc")
-transcriber("cuitláhuac")
-transcriber("salud")
-transcriber("búho")
-transcriber("código")
+    return final_transcription  
