@@ -4,6 +4,9 @@ plosives = resources.plosives
 vowels = resources.vowels
 map_unvar = resources.map_unvar
 
+# Missing rules for "nsk4" and "sntr"
+# Missing rules for "ps" belonging to two different syllables 
+
 def transcriber(text):
     text = list(text.lower())
     output = []

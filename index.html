@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonemic Transcription</title>
+</head>
+<body>
+
+    <h1>Phonemic Transcription</h1>
+
+    <form action="/" method="post">
+        <div class="d-flex">
+            <input type="text" class="form-control mb-3 mx-3 w-75" name="word" placeholder="Enter the word">
+            <button type="submit" class="btn btn-primary mx-3 w-25 h-75">Submit</button>
+        </div>
+    </form>
+
+    <h2>Result:</h2>
+    <div id="transcriptionResult">
+        {% if transcriptionResult %}
+            {{ transcriptionResult }}
+        {% endif %}
+    </div>
+
+</body>
+</html>
