@@ -2,6 +2,8 @@ import re
 from typing import Optional
 import resources
 
+# Shared inventories and lookup tables live in resources.py.
+# Keeping aliases here makes phonological rules easier to read.
 plosives = resources.plosives
 vowels = resources.vowels
 map_unvar = resources.map_unvar
@@ -19,12 +21,23 @@ x_word_overrides = resources.x_word_overrides
 
 
 def _normalize_input(text: str) -> str:
+    """Normalize user text to a single lowercase Spanish token.
+
+    The transcriber works at word level. We strip whitespace, lowercase,
+    and remove anything that is not a Spanish letter (including accents/ü/ñ).
+    """
     normalized_text = str(text).strip().lower()
     normalized_text = re.sub(r"[^a-záéíóúüñ]", "", normalized_text)
     return normalized_text
 
 
 def _phonemic_rules(i: int, next_letter: Optional[str], previous_letter: Optional[str]) -> dict:
+    """Return contextual grapheme→phoneme rules for the current position.
+
+    Many Spanish letters are context-sensitive (e.g., c before e/i, intervocalic
+    lenition for b/d/g, trilled vs tapped r). This helper centralizes those
+    mappings so the main conversion loop stays linear and readable.
+    """
     return {
         "c": {"h": "tS", "e": "s", "i": "s", "default": "k"},
         "q": {"u": "k", "default": "k"},
@@ -78,6 +91,14 @@ def _phonemic_rules(i: int, next_letter: Optional[str], previous_letter: Optiona
 
 
 def _graphemes_to_phonemes(text_chars: list[str]) -> list[str]:
+    """Convert normalized letters into a linear phoneme sequence.
+
+    The function applies:
+    - invariant mappings (map_unvar),
+    - special-case digraph/trigraph handling (e.g., x/ch patterns),
+    - silent letters (h, orthographic u in gue/gui/que/qui),
+    - and fallback contextual rules from _phonemic_rules.
+    """
     output = []
 
     for i, letter in enumerate(text_chars):
@@ -89,6 +110,7 @@ def _graphemes_to_phonemes(text_chars: list[str]) -> list[str]:
 
         if letter in map_unvar:
             output.append(map_unvar[letter])
+        # x has several orthography-dependent realizations in this project.
         elif letter == "x" and next_letter in plain_vowels and next_next_letter == "c" and next_third_letter == "h":
             output.append("s")
         elif letter == "x" and next_letter == "c" and next_next_letter == "h":
@@ -97,12 +119,15 @@ def _graphemes_to_phonemes(text_chars: list[str]) -> list[str]:
             output.extend(["k", "s"])
         elif letter == "x":
             output.append("S")
+        # rr is represented by a single trill token; skip duplicated second r.
         elif letter == "r" and previous_letter == "r":
             continue
+        # huV can surface as [gw] word-initially and [Gw] elsewhere.
         elif letter == "u" and previous_letter == "h" and i == 1 and next_letter in vowel_or_accented:
             output.extend(["g", "w"])
         elif letter == "u" and previous_letter == "h" and i > 1 and next_letter in vowel_or_accented:
             output.extend(["G", "w"])
+        # Orthographic u in gue/gui/que/qui is silent unless explicitly diaerized.
         elif letter == "u" and previous_letter in ["g", "q"] and next_letter in ["e", "i"]:
             continue
         elif letter == "h":
@@ -116,6 +141,17 @@ def _graphemes_to_phonemes(text_chars: list[str]) -> list[str]:
 
 
 def _syllabify(phonemes: list[str]) -> str:
+    """Insert syllable boundaries using onset-maximization heuristics.
+
+    Strategy:
+    1) Find vowel nuclei.
+    2) For each inter-vocalic consonant cluster, decide how much attaches to
+       the following syllable onset.
+    3) Prefer legal Spanish onsets (allowed_onsets); otherwise split later.
+
+    This is a practical heuristic syllabifier for stress placement, not a full
+    phonological parser.
+    """
     nucleus_tokens = set(plain_vowels + stressed_vowel_phonemes)
     allowed_onsets = {
         ("p", "4"), ("b", "4"), ("t", "4"), ("d", "4"), ("k", "4"), ("g", "4"), ("G", "4"), ("f", "4"),
@@ -137,6 +173,7 @@ def _syllabify(phonemes: list[str]) -> str:
         cluster = phonemes[left_v + 1:right_v]
         cluster_len = len(cluster)
 
+        # Decide where the next syllable starts based on inter-vocalic cluster size.
         if cluster_len == 0:
             next_start = right_v
         elif cluster_len == 1:
@@ -159,6 +196,11 @@ def _syllabify(phonemes: list[str]) -> str:
 
 
 def _compute_stress(text_chars: list[str], phonemes: list[str], word_ending: str) -> str:
+    """Determine stress class (acute/grave/paroxytone).
+
+    If written accents exist, they override default Spanish stress rules.
+    Otherwise, infer stress from the canonical orthographic ending pattern.
+    """
     vowel_list = [char for char in phonemes if char in plain_vowels + stressed_vowel_phonemes]
 
     if any(x in text_chars for x in accented_vowels):
@@ -176,10 +218,13 @@ def _compute_stress(text_chars: list[str], phonemes: list[str], word_ending: str
 
 
 def _apply_stress_and_format(joint_phonemes: str, stress: str) -> str:
+    """Insert stress marker into the selected syllable and rebuild output string."""
     syllable_list = [[]]
     i = 0
 
     for phoneme in joint_phonemes:
+        # Ignore pre-existing accent markers from intermediate representation;
+        # stress is re-applied consistently from the computed class.
         if phoneme == "'":
             continue
         if phoneme != ".":
@@ -206,6 +251,7 @@ def _apply_stress_and_format(joint_phonemes: str, stress: str) -> str:
 
 
 def transcriber(text):
+    """Transcribe a Spanish word into the project's SAMPA-like representation."""
     normalized_text = _normalize_input(text)
     if not normalized_text:
         return ""
@@ -213,6 +259,7 @@ def transcriber(text):
     text_chars = list(normalized_text)
     word_ending = text_chars[-1]
 
+    # Some x-initial/exceptional words are lexicalized to avoid overgeneralization.
     if normalized_text in x_word_overrides:
         phonemes = x_word_overrides[normalized_text]
     else:

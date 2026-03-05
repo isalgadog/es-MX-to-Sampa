@@ -1,8 +1,18 @@
+"""Regression tests for ``transcriber.transcriber``.
+
+The dictionaries below act as compact fixtures:
+- ``gold_cases``: stable baseline corpus expected to pass continuously.
+- ``x_cluster_cases``: historically variable <x>-cluster words kept in a
+  separate skipped suite for explicit review.
+"""
+
 import pytest
 
 import transcriber
 
 
+# Canonical word -> expected transcription mappings used as the primary
+# regression test corpus.
 gold_cases = {
     'hola': "'o.la",
     'casa': "'ka.sa",
@@ -92,6 +102,8 @@ gold_cases = {
 }
 
 
+# Additional corpus for words with historically unstable orthographic <x>
+# behavior; kept separate and skipped by default.
 x_cluster_cases = {
     'México': "'me.xi.ko",
     'Oaxaca': "Gwa.'xa.ka",
@@ -118,10 +130,12 @@ x_cluster_cases = {
 
 @pytest.mark.parametrize("word, expected", gold_cases.items())
 def test_transcriber_gold_cases(word: str, expected: str) -> None:
+    """Validate baseline transcriptions for the main regression corpus."""
     assert transcriber.transcriber(word) == expected
 
 
 @pytest.mark.skip(reason="Special X cluster: reviewed separately")
 @pytest.mark.parametrize("word, expected", x_cluster_cases.items())
 def test_transcriber_x_cluster_cases(word: str, expected: str) -> None:
+    """Reference test for <x>-cluster cases kept outside default CI pass."""
     assert transcriber.transcriber(word) == expected
