@@ -8,7 +8,11 @@ map_unvar = resources.map_unvar
 # Missing rules for "ps" belonging to two different syllables 
 
 def transcriber(text):
-    text = list(text.lower())
+    normalized_text = str(text).strip().lower()
+    if not normalized_text:
+        return ""
+
+    text = list(normalized_text)
     output = []
     #PHONEMIC TRANSCRIPTION
     
@@ -16,7 +20,6 @@ def transcriber(text):
     word_ending = text[-1]
             
     for i, letter in enumerate(text):
-        global phonemes
         # Check if it's the last letter
         next_letter = text[i + 1] if i < len(text) - 1 else None
         previous_letter = text[i - 1] if i > 0 else None        
@@ -133,11 +136,13 @@ def transcriber(text):
             i +=1 
 
     if stress == "acute":
-        syllable_list[-1].insert(0,"'") 
+        stress_index = -1
     elif stress == "grave":
-        syllable_list[-2].insert(0,"'")
+        stress_index = -2 if len(syllable_list) >= 2 else -1
     else:
-        syllable_list[-3].insert(0,"'")
+        stress_index = -3 if len(syllable_list) >= 3 else (-2 if len(syllable_list) >= 2 else -1)
+
+    syllable_list[stress_index].insert(0, "'")
 
 
     final_transcription = []
