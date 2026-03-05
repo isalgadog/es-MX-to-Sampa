@@ -1,3 +1,4 @@
+import re
 import resources
 
 plosives = resources.plosives
@@ -9,6 +10,7 @@ map_unvar = resources.map_unvar
 
 def transcriber(text):
     normalized_text = str(text).strip().lower()
+    normalized_text = re.sub(r"[^a-záéíóúüñ]", "", normalized_text)
     if not normalized_text:
         return ""
 
@@ -93,15 +95,13 @@ def transcriber(text):
         next_phoneme = phonemes[i + 1] if i < len(phonemes) - 1 else None
         previous_phoneme = phonemes[i - 1] if i > 0 else None
 
-        if i == len(phonemes):
-            modified_phonemes.append(phoneme)
-        elif i > 0 and phoneme in plosives and i < len(phonemes)-1 and not (phoneme == "t" and next_phoneme == "s"):
+        if i > 0 and phoneme in plosives and i < len(phonemes)-1 and not (phoneme == "t" and next_phoneme == "s"):
             modified_phonemes.append(".")
         elif i > 0 and phoneme == "s" and previous_phoneme == "t":
             modified_phonemes.append(".")
         elif i > 0 and phoneme in ["s", "n", "m"] and previous_phoneme in ["s", "n", "m", "l"]:
             modified_phonemes.append(".")
-        elif i > 0 and phoneme in ["4", "s", "n", "m", "l", "j", "w"] and (previous_phoneme in vowels or previous_phoneme in ["'i", "'u", "'e", "'a", "'o"]) and (next_phoneme in vowels or next_phoneme in ["'i", "'u", "'e", "'a", "'o"]):
+        elif i > 0 and next_phoneme is not None and phoneme in ["4", "s", "n", "m", "l", "j", "w"] and (previous_phoneme in vowels or previous_phoneme in ["'i", "'u", "'e", "'a", "'o"]) and (next_phoneme in vowels or next_phoneme in ["'i", "'u", "'e", "'a", "'o"]):
             modified_phonemes.append(".")
         elif i > 0 and phoneme in ["a", "e", "o"] and previous_phoneme in ["a", "e", "o", "'i", "'u"]:
             modified_phonemes.append(".")

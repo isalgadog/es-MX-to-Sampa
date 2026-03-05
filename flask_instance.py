@@ -10,8 +10,10 @@ def get_transcription(word: str) -> str:
     """
     return transcriber.transcriber(word)
 
+@app.route('/health')
+@app.route('/healthCheck')
 @app.route('/healtCheck')
-def index():
+def health_check():
     return "true"
 
 @app.route('/', methods=['GET', 'POST'])
