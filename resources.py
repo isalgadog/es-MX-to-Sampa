@@ -30,3 +30,13 @@ x_word_overrides = {
     "méxico": ["m", "'e", "x", "i", "k", "o"],
     "oaxaca": ["G", "w", "a", "x", "a", "k", "a"],
 }
+
+# Targeted linguistic syllabification overrides (final transcription string).
+syllable_overrides = {
+    "transcribir": "t4ans.'k4i.Bi4",
+    "abstracto": "abs.'t4ak.to",
+    "instituto": "ins.ti.'tu.to",
+    "perspectiva": "pe4s.pek.'ti.Ba",
+    "ritmo": "'rit.mo",
+    "digno": "'dig.no",
+}

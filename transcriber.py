@@ -68,6 +68,7 @@ def _phonemic_rules(i: int, next_letter: Optional[str], previous_letter: Optiona
         "í": {"default": "'i"},
         "ó": {"default": "'o"},
         "ú": {"default": "'u"},
+        "ü": {"default": "w"},
         "y": {
             "default": "jj"
             if i == 0 or (previous_letter in vowel_or_accented and next_letter in vowel_or_accented)
@@ -115,34 +116,46 @@ def _graphemes_to_phonemes(text_chars: list[str]) -> list[str]:
 
 
 def _syllabify(phonemes: list[str]) -> str:
-    modified_phonemes = []
+    nucleus_tokens = set(plain_vowels + stressed_vowel_phonemes)
+    allowed_onsets = {
+        ("p", "4"), ("b", "4"), ("t", "4"), ("d", "4"), ("k", "4"), ("g", "4"), ("G", "4"), ("f", "4"),
+        ("p", "l"), ("b", "l"), ("k", "l"), ("g", "l"), ("G", "l"), ("f", "l"), ("t", "l"),
+        ("k", "w"), ("g", "w"), ("G", "w"),
+        ("b", "j"), ("B", "j"), ("d", "j"), ("D", "j"), ("4", "j"), ("r", "j"), ("s", "j"),
+        ("g", "ü"), ("G", "ü"), ("k", "ü"),
+    }
 
-    for i, phoneme in enumerate(phonemes):
-        next_phoneme = phonemes[i + 1] if i < len(phonemes) - 1 else None
-        previous_phoneme = phonemes[i - 1] if i > 0 else None
+    vowel_positions = [i for i, p in enumerate(phonemes) if p in nucleus_tokens]
+    if len(vowel_positions) <= 1:
+        return "".join(phonemes)
 
-        if i > 0 and phoneme in plosives and i < len(phonemes) - 1 and not (phoneme in ["t", "k"] and next_phoneme == "s"):
-            modified_phonemes.append(".")
-        elif i > 0 and phoneme == "s" and previous_phoneme == "t":
-            modified_phonemes.append(".")
-        elif i > 0 and phoneme in ["s", "n", "m"] and previous_phoneme in ["s", "n", "m", "l"]:
-            modified_phonemes.append(".")
-        elif (
-            i > 0
-            and next_phoneme is not None
-            and phoneme in sonorant_breakers
-            and (previous_phoneme in vowels or previous_phoneme in stressed_like_phonemes)
-            and (next_phoneme in vowels or next_phoneme in stressed_like_phonemes)
-        ):
-            modified_phonemes.append(".")
-        elif i > 0 and phoneme in ["a", "e", "o"] and previous_phoneme in ["a", "e", "o", "'i", "'u"]:
-            modified_phonemes.append(".")
-        elif i > 0 and phoneme in ["'i", "'u"] and previous_phoneme in ["a", "e", "o"]:
-            modified_phonemes.append(".")
+    starts = [0]
 
-        modified_phonemes.append(phoneme)
+    for idx in range(len(vowel_positions) - 1):
+        left_v = vowel_positions[idx]
+        right_v = vowel_positions[idx + 1]
+        cluster = phonemes[left_v + 1:right_v]
+        cluster_len = len(cluster)
 
-    return "".join(modified_phonemes)
+        if cluster_len == 0:
+            next_start = right_v
+        elif cluster_len == 1:
+            next_start = right_v - 1
+        elif cluster_len == 2:
+            next_start = right_v - 2 if tuple(cluster) in allowed_onsets else right_v - 1
+        else:
+            last_two = tuple(cluster[-2:])
+            next_start = right_v - 2 if last_two in allowed_onsets else right_v - 1
+
+        if next_start > starts[-1]:
+            starts.append(next_start)
+
+    syllables = []
+    for i, start in enumerate(starts):
+        end = starts[i + 1] if i + 1 < len(starts) else len(phonemes)
+        syllables.append("".join(phonemes[start:end]))
+
+    return ".".join(syllables)
 
 
 def _compute_stress(text_chars: list[str], phonemes: list[str], word_ending: str) -> str:
