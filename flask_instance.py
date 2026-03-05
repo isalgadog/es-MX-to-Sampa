@@ -4,7 +4,8 @@ This module wires HTTP routes to the transcription engine exposed by
 ``transcriber.transcriber`` and renders the single-page HTML template.
 """
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
+from flask_cors import CORS
 import sys
 
 import transcriber
@@ -12,6 +13,21 @@ import transcriber
 # ``template_folder='.'`` keeps compatibility with the current project layout,
 # where ``index.html`` lives at repository root.
 app = Flask(__name__, template_folder='.')
+
+# CORS is restricted to your public site origins for /api/* routes.
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": [
+                "https://isalgadog.net",
+                "https://www.isalgadog.net",
+                "http://localhost:3000",
+                "http://127.0.0.1:5500",
+            ]
+        }
+    },
+)
 
 
 def get_transcription(word: str) -> str:
@@ -26,12 +42,29 @@ def get_transcription(word: str) -> str:
     return transcriber.transcriber(word)
 
 
+@app.route('/api/transcribe', methods=['POST'])
+def api_transcribe():
+    """JSON API endpoint for remote frontend clients.
+
+    Expected payload:
+        {"word": "..."}
+    """
+    data = request.get_json(silent=True) or {}
+    word = str(data.get('word', '')).strip()
+
+    if not word:
+        return jsonify({"error": "word is required"}), 400
+
+    transcription_result = get_transcription(word)
+    return jsonify({"transcription": transcription_result})
+
+
 @app.route('/health')
 @app.route('/healthCheck')
 @app.route('/healtCheck')
 def health_check():
     """Lightweight liveness probe used by external health checks."""
-    return "true"
+    return "ok", 200
 
 
 @app.route('/', methods=['GET', 'POST'])
