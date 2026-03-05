@@ -70,6 +70,10 @@ def transcriber(text):
             output.append(map_unvar[letter])
         elif letter == "r" and previous_letter == "r":
             continue  # Skip adding "4" after "r"
+        elif letter == "u" and previous_letter == "h" and i == 1 and next_letter in ["a", "e", "i", "o", "u", "á", "é", "í", "ó", "ú"]:
+            output.extend(["g", "w"])
+        elif letter == "u" and previous_letter == "h" and i > 1 and next_letter in ["a", "e", "i", "o", "u", "á", "é", "í", "ó", "ú"]:
+            output.extend(["G", "w"])
         elif letter == "u" and previous_letter in ["g", "q"] and next_letter in ["e", "i"]:
             continue
         elif letter == "h":
@@ -90,7 +94,9 @@ def transcriber(text):
 
         if i == len(phonemes):
             modified_phonemes.append(phoneme)
-        elif i > 0 and phoneme in plosives and i < len(phonemes)-1:
+        elif i > 0 and phoneme in plosives and i < len(phonemes)-1 and not (phoneme == "t" and next_phoneme == "s"):
+            modified_phonemes.append(".")
+        elif i > 0 and phoneme == "s" and previous_phoneme == "t":
             modified_phonemes.append(".")
         elif i > 0 and phoneme in ["s", "n", "m"] and previous_phoneme in ["s", "n", "m", "l"]:
             modified_phonemes.append(".")
