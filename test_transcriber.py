@@ -1,4 +1,7 @@
+import pytest
+
 import transcriber
+
 
 gold_cases = {
     'hola': "'o.la",
@@ -71,29 +74,10 @@ gold_cases = {
     'prohíbe': "p4o.'i.be",
     'ancla': "'an.kla",
     'congreso': "kon.'g4e.so",
-    'reúne': "re.'u.ne"
+    'reúne': "re.'u.ne",
 }
 
-test_cases = {key: '' for key in gold_cases}
 
-def test():
-    for word in gold_cases:
-        print(word)
-        transcription = transcriber.transcriber(word)
-        test_cases[word] = transcription
-        print(transcription)
-
-print(test_cases)
-
-
-test()
-print("GOLD: " + str(gold_cases))
-print("TEST: " + str(test_cases))
-
-differing_values = {}
-
-for key in gold_cases:
-    if gold_cases[key] != test_cases[key]:
-        differing_values[key] = (gold_cases[key], test_cases[key])
-
-print("ERRORS: " + str(differing_values))
+@pytest.mark.parametrize("word, expected", gold_cases.items())
+def test_transcriber_gold_cases(word: str, expected: str) -> None:
+    assert transcriber.transcriber(word) == expected
