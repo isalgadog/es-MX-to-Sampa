@@ -53,7 +53,25 @@ gold_cases = {
     'Huitzilac': "gwit.si.'lak",
     'entréguennos': "en.'t4e.Gen.nos",
     'alzado': "al.'sa.Do",
-    'encima': "en.'si.ma"
+    'encima': "en.'si.ma",
+    'ya': "'ja",
+    'ayer': "a.'je4",
+    'país': "pa.'is",
+    'río': "'ri.o",
+    'rehúso': "re.'u.so",
+    'atlante': "a.'tlan.te",
+    'tlaco': "'tla.ko",
+    'hueso': "'gwe.so",
+    'robot': "ro.'Bot",
+    'prueba': "'p4we.Ba",
+    'cráneo': "'k4a.ne.o",
+    'frase': "'f4a.se",
+    'globo': "'glo.Bo",
+    'clase': "'kla.se",
+    'prohíbe': "p4o.'i.be",
+    'ancla': "'an.kla",
+    'congreso': "kon.'g4e.so",
+    'reúne': "re.'u.ne"
 }
 
 test_cases = {key: '' for key in gold_cases}

@@ -62,7 +62,8 @@ def transcriber(text):
             "é": {"default": "'e"},
             "í": {"default": "'i"},
             "ó": {"default": "'o"},
-            "ú": {"default": "'u"}
+            "ú": {"default": "'u"},
+            "y": {"default": "j" if i == 0 or (previous_letter in ["a", "e", "i", "o", "u", "á", "é", "í", "ó", "ú"] and next_letter in ["a", "e", "i", "o", "u", "á", "é", "í", "ó", "ú"]) else "i"}
         }
 
         #Apply phonemic rules
