@@ -5,13 +5,16 @@ import resources
 plosives = resources.plosives
 vowels = resources.vowels
 map_unvar = resources.map_unvar
+accented_vowels = resources.accented_vowels
+vowel_or_accented = resources.vowel_or_accented
+plain_vowels = resources.plain_vowels
+stressed_vowel_phonemes = resources.stressed_vowel_phonemes
+grave_endings = resources.grave_endings
+stressed_like_phonemes = resources.stressed_like_phonemes
+sonorant_breakers = resources.sonorant_breakers
 
 # Missing rules for "nsk4" and "sntr"
 # Missing rules for "ps" belonging to two different syllables
-
-ACCENTED_VOWELS = ["á", "é", "í", "ó", "ú"]
-VOWEL_OR_ACCENTED = ["a", "e", "i", "o", "u", "á", "é", "í", "ó", "ú"]
-STRESSED_VOWEL_PHONEMES = ["'a", "'e", "'i", "'o", "'u"]
 
 
 def _normalize_input(text: str) -> str:
@@ -66,7 +69,7 @@ def _phonemic_rules(i: int, next_letter: Optional[str], previous_letter: Optiona
         "ú": {"default": "'u"},
         "y": {
             "default": "j"
-            if i == 0 or (previous_letter in VOWEL_OR_ACCENTED and next_letter in VOWEL_OR_ACCENTED)
+            if i == 0 or (previous_letter in vowel_or_accented and next_letter in vowel_or_accented)
             else "i"
         },
     }
@@ -84,9 +87,9 @@ def _graphemes_to_phonemes(text_chars: list[str]) -> list[str]:
             output.append(map_unvar[letter])
         elif letter == "r" and previous_letter == "r":
             continue
-        elif letter == "u" and previous_letter == "h" and i == 1 and next_letter in VOWEL_OR_ACCENTED:
+        elif letter == "u" and previous_letter == "h" and i == 1 and next_letter in vowel_or_accented:
             output.extend(["g", "w"])
-        elif letter == "u" and previous_letter == "h" and i > 1 and next_letter in VOWEL_OR_ACCENTED:
+        elif letter == "u" and previous_letter == "h" and i > 1 and next_letter in vowel_or_accented:
             output.extend(["G", "w"])
         elif letter == "u" and previous_letter in ["g", "q"] and next_letter in ["e", "i"]:
             continue
@@ -102,7 +105,6 @@ def _graphemes_to_phonemes(text_chars: list[str]) -> list[str]:
 
 def _syllabify(phonemes: list[str]) -> str:
     modified_phonemes = []
-    stressed_like = ["'i", "'u", "'e", "'a", "'o"]
 
     for i, phoneme in enumerate(phonemes):
         next_phoneme = phonemes[i + 1] if i < len(phonemes) - 1 else None
@@ -117,9 +119,9 @@ def _syllabify(phonemes: list[str]) -> str:
         elif (
             i > 0
             and next_phoneme is not None
-            and phoneme in ["4", "s", "n", "m", "l", "j", "w"]
-            and (previous_phoneme in vowels or previous_phoneme in stressed_like)
-            and (next_phoneme in vowels or next_phoneme in stressed_like)
+            and phoneme in sonorant_breakers
+            and (previous_phoneme in vowels or previous_phoneme in stressed_like_phonemes)
+            and (next_phoneme in vowels or next_phoneme in stressed_like_phonemes)
         ):
             modified_phonemes.append(".")
         elif i > 0 and phoneme in ["a", "e", "o"] and previous_phoneme in ["a", "e", "o", "'i", "'u"]:
@@ -133,16 +135,15 @@ def _syllabify(phonemes: list[str]) -> str:
 
 
 def _compute_stress(text_chars: list[str], phonemes: list[str], word_ending: str) -> str:
-    grave_endings = ["n", "s", "a", "e", "i", "o", "u"]
-    vowel_list = [char for char in phonemes if char in ["a", "e", "i", "o", "u", "'a", "'e", "'i", "'o", "'u"]]
+    vowel_list = [char for char in phonemes if char in plain_vowels + stressed_vowel_phonemes]
 
-    if any(x in text_chars for x in ACCENTED_VOWELS):
+    if any(x in text_chars for x in accented_vowels):
         stress = "grave"
-        if vowel_list and vowel_list[-1] in STRESSED_VOWEL_PHONEMES:
+        if vowel_list and vowel_list[-1] in stressed_vowel_phonemes:
             stress = "acute"
-        elif len(vowel_list) > 1 and vowel_list[-2] in STRESSED_VOWEL_PHONEMES:
+        elif len(vowel_list) > 1 and vowel_list[-2] in stressed_vowel_phonemes:
             stress = "grave"
-        elif len(vowel_list) > 2 and vowel_list[-3] in STRESSED_VOWEL_PHONEMES:
+        elif len(vowel_list) > 2 and vowel_list[-3] in stressed_vowel_phonemes:
             stress = "paroxytone"
     else:
         stress = "grave" if word_ending in grave_endings else "acute"
