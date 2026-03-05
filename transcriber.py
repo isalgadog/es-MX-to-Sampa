@@ -29,7 +29,7 @@ def _phonemic_rules(i: int, next_letter: Optional[str], previous_letter: Optiona
         "q": {"u": "k", "default": "k"},
         "s": {"h": "S", "default": "s"},
         "r": {"default": "r" if i == 0 or next_letter == "r" or previous_letter in ["n", "l", "s"] else "4"},
-        "l": {"l": "j", "default": "l" if previous_letter != "l" else " "},
+        "l": {"l": "jj", "default": "l" if previous_letter != "l" else " "},
         "g": {
             "a": "g" if i == 0 else "G",
             "o": "g" if i == 0 else "G",
@@ -68,9 +68,9 @@ def _phonemic_rules(i: int, next_letter: Optional[str], previous_letter: Optiona
         "ó": {"default": "'o"},
         "ú": {"default": "'u"},
         "y": {
-            "default": "j"
+            "default": "jj"
             if i == 0 or (previous_letter in vowel_or_accented and next_letter in vowel_or_accented)
-            else "i"
+            else "j"
         },
     }
 
