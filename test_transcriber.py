@@ -77,7 +77,27 @@ gold_cases = {
     'reúne': "re.'u.ne",
 }
 
+# Proposed Nahuatl-origin toponyms/loans with <x> for manual review.
+# Kept separate because <x> is intentionally unstable and under active rule design.
+nahuatl_x_review_cases = {
+    'México': "'me.xi.ko",
+    'Oaxaca': "Gwa.'xa.ka",
+    'Xochimilco': "so.tSi.'mil.ko",
+    'Xochicalco': "so.tSi.'kal.ko",
+    'Texcoco': "teks.'ko.ko",
+    'Mixcoac': "miks.ko.'ak",
+    'Ixtapaluca': "iks.ta.pa.'lu.ka",
+    'Ixtlahuaca': "iks.tla.'Gwa.ka",
+    'Xola': "'So.la",
+}
+
 
 @pytest.mark.parametrize("word, expected", gold_cases.items())
 def test_transcriber_gold_cases(word: str, expected: str) -> None:
+    assert transcriber.transcriber(word) == expected
+
+
+@pytest.mark.skip(reason="Manual review set: Nahuatl <x> behavior is still being defined")
+@pytest.mark.parametrize("word, expected", nahuatl_x_review_cases.items())
+def test_transcriber_nahuatl_x_review_cases(word: str, expected: str) -> None:
     assert transcriber.transcriber(word) == expected

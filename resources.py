@@ -24,3 +24,9 @@ stressed_vowel_phonemes = ["'a", "'e", "'i", "'o", "'u"]
 grave_endings = ["n", "s", "a", "e", "i", "o", "u"]
 stressed_like_phonemes = ["'i", "'u", "'e", "'a", "'o"]
 sonorant_breakers = ["4", "s", "n", "m", "l", "j", "jj", "w"]
+
+# Whole-word overrides for unstable <x> behavior in Nahuatl-origin forms.
+x_word_overrides = {
+    "méxico": ["m", "'e", "x", "i", "k", "o"],
+    "oaxaca": ["G", "w", "a", "x", "a", "k", "a"],
+}

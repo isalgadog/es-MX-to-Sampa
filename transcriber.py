@@ -12,6 +12,7 @@ stressed_vowel_phonemes = resources.stressed_vowel_phonemes
 grave_endings = resources.grave_endings
 stressed_like_phonemes = resources.stressed_like_phonemes
 sonorant_breakers = resources.sonorant_breakers
+x_word_overrides = resources.x_word_overrides
 
 # Missing rules for "nsk4" and "sntr"
 # Missing rules for "ps" belonging to two different syllables
@@ -80,11 +81,21 @@ def _graphemes_to_phonemes(text_chars: list[str]) -> list[str]:
 
     for i, letter in enumerate(text_chars):
         next_letter = text_chars[i + 1] if i < len(text_chars) - 1 else None
+        next_next_letter = text_chars[i + 2] if i < len(text_chars) - 2 else None
+        next_third_letter = text_chars[i + 3] if i < len(text_chars) - 3 else None
         previous_letter = text_chars[i - 1] if i > 0 else None
         phonemic_rules = _phonemic_rules(i, next_letter, previous_letter)
 
         if letter in map_unvar:
             output.append(map_unvar[letter])
+        elif letter == "x" and next_letter in plain_vowels and next_next_letter == "c" and next_third_letter == "h":
+            output.append("s")
+        elif letter == "x" and next_letter == "c" and next_next_letter == "h":
+            output.append("s")
+        elif letter == "x" and next_letter in ["c", "t"]:
+            output.extend(["k", "s"])
+        elif letter == "x":
+            output.append("S")
         elif letter == "r" and previous_letter == "r":
             continue
         elif letter == "u" and previous_letter == "h" and i == 1 and next_letter in vowel_or_accented:
@@ -110,7 +121,7 @@ def _syllabify(phonemes: list[str]) -> str:
         next_phoneme = phonemes[i + 1] if i < len(phonemes) - 1 else None
         previous_phoneme = phonemes[i - 1] if i > 0 else None
 
-        if i > 0 and phoneme in plosives and i < len(phonemes) - 1 and not (phoneme == "t" and next_phoneme == "s"):
+        if i > 0 and phoneme in plosives and i < len(phonemes) - 1 and not (phoneme in ["t", "k"] and next_phoneme == "s"):
             modified_phonemes.append(".")
         elif i > 0 and phoneme == "s" and previous_phoneme == "t":
             modified_phonemes.append(".")
@@ -189,7 +200,10 @@ def transcriber(text):
     text_chars = list(normalized_text)
     word_ending = text_chars[-1]
 
-    phonemes = _graphemes_to_phonemes(text_chars)
+    if normalized_text in x_word_overrides:
+        phonemes = x_word_overrides[normalized_text]
+    else:
+        phonemes = _graphemes_to_phonemes(text_chars)
     joint_phonemes = _syllabify(phonemes)
     stress = _compute_stress(text_chars, phonemes, word_ending)
 
