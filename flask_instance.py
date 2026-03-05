@@ -24,7 +24,7 @@ def home():
     if 'word' in request.form:
         word = request.form['word']
         transcription_result = get_transcription(word)
-        return render_template('index.html', transcriptionResult=transcription_result)
+        return render_template('index.html', transcriptionResult=transcription_result, word=word)
     else:
         return render_template('index.html')
 

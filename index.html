@@ -1,27 +1,219 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phonemic Transcription</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>es-MX → SAMPA</title>
+  <style>
+    :root {
+      --bg: #5CDB95;
+      --ink: #05386B;
+      --card: rgba(255, 255, 255, 0.82);
+      --cardBorder: rgba(5, 56, 107, 0.18);
+      --shadow: 0 18px 50px rgba(5, 56, 107, 0.18);
+      --radius: 22px;
+      --inputBg: rgba(255, 255, 255, 0.85);
+      --btn: #05386B;
+      --btnHover: #0b4f93;
+      --focus: #05386B;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      font-family: "Gill Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 900px at 20% 10%, rgba(255,255,255,.35), transparent 60%),
+        radial-gradient(900px 700px at 90% 30%, rgba(5,56,107,.18), transparent 55%),
+        var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 28px 16px;
+      overflow-x: hidden;
+    }
+
+    .blob {
+      position: fixed;
+      inset: -180px -220px auto auto;
+      width: 520px;
+      height: 520px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.55), rgba(255,255,255,.05) 55%, transparent 70%),
+        radial-gradient(circle at 70% 70%, rgba(5,56,107,.22), rgba(5,56,107,0) 60%);
+      border-radius: 38% 62% 63% 37% / 40% 40% 60% 60%;
+      animation: blob 12s ease-in-out infinite;
+      pointer-events: none;
+      opacity: .9;
+    }
+
+    @keyframes blob {
+      0%   { transform: translate(0,0) rotate(0deg) scale(1);   border-radius: 38% 62% 63% 37% / 40% 40% 60% 60%; }
+      33%  { transform: translate(-70px,60px) rotate(8deg) scale(1.04); border-radius: 58% 42% 36% 64% / 44% 63% 37% 56%; }
+      66%  { transform: translate(-30px,-40px) rotate(-6deg) scale(.98); border-radius: 42% 58% 62% 38% / 62% 43% 57% 38%; }
+      100% { transform: translate(0,0) rotate(0deg) scale(1);   border-radius: 38% 62% 63% 37% / 40% 40% 60% 60%; }
+    }
+
+    .card {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 1px solid var(--cardBorder);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 26px 24px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      opacity: .9;
+      font-size: 16px;
+    }
+
+    form {
+      margin-top: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid rgba(5,56,107,.18);
+      background: var(--inputBg);
+      border-radius: 14px;
+      color: var(--ink);
+      font-size: 17px;
+      padding: 12px 14px;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: rgba(5,56,107,.5);
+      box-shadow: 0 0 0 3px rgba(5,56,107,.16);
+    }
+
+    button {
+      border: none;
+      background: var(--btn);
+      color: #fff;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: transform .12s ease, background .12s ease;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: var(--btnHover);
+      transform: translateY(-1px);
+    }
+
+    button:focus-visible {
+      outline: 3px solid rgba(5,56,107,.35);
+      outline-offset: 3px;
+    }
+
+    .result {
+      margin-top: 16px;
+      border: 1px solid rgba(5,56,107,.14);
+      border-radius: 16px;
+      background: rgba(255,255,255,.6);
+      padding: 14px;
+      min-height: 74px;
+    }
+
+    .result-title {
+      margin: 0 0 8px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      font-size: 12px;
+      opacity: .7;
+    }
+
+    .phon {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: clamp(20px, 4vw, 28px);
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .placeholder {
+      opacity: .55;
+      font-size: 14px;
+    }
+
+    .footer {
+      margin-top: 12px;
+      font-size: 12px;
+      opacity: .75;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .blob { animation: none; }
+      button { transition: none; }
+    }
+  </style>
 </head>
 <body>
+  <div class="blob" aria-hidden="true"></div>
 
-    <h1>Phonemic Transcription</h1>
+  <main class="card" role="main">
+    <h1>es-MX → SAMPA</h1>
+    <p class="subtitle">Transcriptor fonológico de español mexicano a SAMPA.</p>
 
     <form action="/" method="post">
-        <div class="d-flex">
-            <input type="text" class="form-control mb-3 mx-3 w-75" name="word" placeholder="Enter the word">
-            <button type="submit" class="btn btn-primary mx-3 w-25 h-75">Submit</button>
-        </div>
+      <div class="form-row">
+        <input
+          type="text"
+          name="word"
+          placeholder="Escribe una palabra (ej. Cuitláhuac)"
+          value="{{ word if word else '' }}"
+          autocomplete="off"
+          required
+        />
+        <button type="submit">Transcribir</button>
+      </div>
     </form>
 
-    <h2>Result:</h2>
-    <div id="transcriptionResult">
-        {% if transcriptionResult %}
-            {{ transcriptionResult }}
-        {% endif %}
-    </div>
+    <section class="result" aria-live="polite">
+      <p class="result-title">Resultado</p>
+      {% if transcriptionResult %}
+        <div class="phon">{{ transcriptionResult }}</div>
+      {% else %}
+        <div class="placeholder">Todavía no hay transcripción.</div>
+      {% endif %}
+    </section>
 
+    <div class="footer">
+      <span>Tip: usa una sola palabra para mejores resultados.</span>
+      <span>Python + Flask</span>
+    </div>
+  </main>
 </body>
 </html>
