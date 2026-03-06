@@ -6,6 +6,8 @@ This module wires HTTP routes to the transcription engine exposed by
 
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import sys
 
 import transcriber
@@ -13,6 +15,16 @@ import transcriber
 # ``template_folder='.'`` keeps compatibility with the current project layout,
 # where ``index.html`` lives at repository root.
 app = Flask(__name__, template_folder='.')
+
+# Basic request-size protection for API/form payloads.
+app.config["MAX_CONTENT_LENGTH"] = 2 * 1024  # 2 KB
+
+# Limit abuse by source IP at application level.
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per hour"],
+)
 
 # CORS is restricted to your public site origins for /api/* routes.
 CORS(
@@ -29,6 +41,8 @@ CORS(
     },
 )
 
+MAX_WORD_LENGTH = 64
+
 
 def get_transcription(word: str) -> str:
     """Return the phonological transcription for a given input word.
@@ -43,6 +57,7 @@ def get_transcription(word: str) -> str:
 
 
 @app.route('/api/transcribe', methods=['POST'])
+@limiter.limit("30 per minute")
 def api_transcribe():
     """JSON API endpoint for remote frontend clients.
 
@@ -54,6 +69,9 @@ def api_transcribe():
 
     if not word:
         return jsonify({"error": "word is required"}), 400
+
+    if len(word) > MAX_WORD_LENGTH:
+        return jsonify({"error": f"word too long (max {MAX_WORD_LENGTH} chars)"}), 400
 
     transcription_result = get_transcription(word)
     return jsonify({"transcription": transcription_result})
@@ -79,7 +97,10 @@ def home():
         return render_template('index.html')
 
     if 'word' in request.form:
-        word = request.form['word']
+        word = request.form['word'].strip()
+        if len(word) > MAX_WORD_LENGTH:
+            return render_template('index.html', transcriptionResult="Palabra demasiado larga", word=word)
+
         transcription_result = get_transcription(word)
         return render_template('index.html', transcriptionResult=transcription_result, word=word)
     else:
