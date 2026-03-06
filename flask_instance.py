@@ -8,6 +8,7 @@ from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import os
 import sys
 
 import transcriber
@@ -26,22 +27,32 @@ limiter = Limiter(
     default_limits=["200 per hour"],
 )
 
-# CORS is restricted to your public site origins for /api/* routes.
+# CORS policy comes from env var to avoid hardcoding dev origins in public code.
+# Example:
+#   CORS_ORIGINS=https://isalgadog.net,https://www.isalgadog.net
+cors_origins_raw = os.getenv("CORS_ORIGINS", "https://isalgadog.net,https://www.isalgadog.net")
+cors_origins = [origin.strip() for origin in cors_origins_raw.split(",") if origin.strip()]
+
 CORS(
     app,
     resources={
         r"/api/*": {
-            "origins": [
-                "https://isalgadog.net",
-                "https://www.isalgadog.net",
-                "http://localhost:3000",
-                "http://127.0.0.1:5500",
-            ]
+            "origins": cors_origins,
         }
     },
 )
 
 MAX_WORD_LENGTH = 64
+
+
+@app.after_request
+def add_security_headers(response):
+    """Add baseline security headers for defense-in-depth."""
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
 
 
 def get_transcription(word: str) -> str:
@@ -78,8 +89,6 @@ def api_transcribe():
 
 
 @app.route('/health')
-@app.route('/healthCheck')
-@app.route('/healtCheck')
 def health_check():
     """Lightweight liveness probe used by external health checks."""
     return "ok", 200
